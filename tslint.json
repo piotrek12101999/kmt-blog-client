@@ -1,0 +1,13 @@
+{
+    "extends": ["tslint:recommended", "tslint-react", "tslint-plugin-prettier", "tslint-config-prettier"],
+    "rules": {
+        "prettier": true,
+        "quotemark": false
+    },
+    "linterOptions": {
+        "exclude": [
+            "node_modules/**/*.ts",
+            "*.js"
+        ]
+    }
+}
