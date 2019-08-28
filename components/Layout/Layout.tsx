@@ -1,5 +1,7 @@
 import Container from "@material-ui/core/Container";
 import Head from "next/head";
+import { useState } from "react";
+import Login from "../Auth/Login/Login";
 import Navbar from "../Navbar/Navbar";
 
 interface ILayoutProps {
@@ -8,15 +10,24 @@ interface ILayoutProps {
   description: string;
 }
 
-const Layout: React.FC<ILayoutProps> = ({ children, title, description }) => (
-  <>
-    <Head>
-      <title> {title} </title>
-      <meta name="description" content={description} />
-    </Head>
-    <Navbar />
-    <Container className="content">{children}</Container>
-  </>
-);
+const Layout: React.FC<ILayoutProps> = ({ children, title, description }) => {
+  const [openLoginDialog, setLoginDialogOpened] = useState(true);
+
+  const handleLoginOpen = (): void => setLoginDialogOpened(true);
+
+  const handleLoginClose = (): void => setLoginDialogOpened(false);
+
+  return (
+    <>
+      <Head>
+        <title> {title} </title>
+        <meta name="description" content={description} />
+      </Head>
+      <Navbar handleLoginOpen={handleLoginOpen} />
+      <Container className="content">{children}</Container>
+      <Login open={openLoginDialog} handleLoginClose={handleLoginClose} />
+    </>
+  );
+};
 
 export default Layout;

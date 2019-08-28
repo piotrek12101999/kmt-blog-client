@@ -1,3 +1,4 @@
+import { Button, Container } from "@material-ui/core";
 import Slide from "@material-ui/core/Slide";
 import useScrollTrigger from "@material-ui/core/useScrollTrigger";
 
@@ -15,13 +16,46 @@ function HideOnScroll({ children }: IProps): JSX.Element {
   );
 }
 
-const Navbar: React.FC<{}> = () => {
+interface INavbarProps {
+  handleLoginOpen: any;
+}
+
+const Navbar: React.FC<INavbarProps> = ({ handleLoginOpen }) => {
   return (
     <>
       <HideOnScroll>
         <header className="navbar">
-          <div className="navbar__logo" />
-          <div className="navbar__buttons" />
+          <Container>
+            <div className="navbar__wrapper">
+              <div className="navbar__wrapper__logo">Klub Młodego Technika</div>
+              <div className="navbar__wrapper__buttons">
+                <Button className="navbar__wrapper__buttons__button">
+                  O nas
+                </Button>
+                <Button className="navbar__wrapper__buttons__button">
+                  Galeria
+                </Button>
+                <Button className="navbar__wrapper__buttons__button">
+                  Blog
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  className="navbar__wrapper__buttons__button"
+                  onClick={handleLoginOpen}
+                >
+                  Log in
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  className="navbar__wrapper__buttons__button"
+                >
+                  Rejestracja
+                </Button>
+              </div>
+            </div>
+          </Container>
         </header>
       </HideOnScroll>
     </>
