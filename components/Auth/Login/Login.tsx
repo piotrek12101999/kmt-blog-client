@@ -8,6 +8,7 @@ import {
   DialogTitle,
   LinearProgress,
   Theme,
+  Typography,
   useMediaQuery,
   useTheme
 } from "@material-ui/core";
@@ -57,7 +58,7 @@ const Login: React.FC<ILoginProps> = ({ open, handleLoginClose }) => {
     setValue({ ...values, password: event.target.value });
   };
 
-  const [logIn, { loading }] = useMutation(LOG_IN_MUTATION);
+  const [logIn, { loading, error }] = useMutation(LOG_IN_MUTATION);
 
   const handleLogin = (): void => {
     const { email, password } = values;
@@ -75,6 +76,13 @@ const Login: React.FC<ILoginProps> = ({ open, handleLoginClose }) => {
   const renderLoading = (): JSX.Element | null =>
     loading ? <LinearProgress /> : null;
 
+  const renderError = (): JSX.Element | null =>
+    error ? (
+      <Typography color="secondary">
+        {error.message ? error.message : "Nieznany błąd, spróbuj później!"}
+      </Typography>
+    ) : null;
+
   return (
     <>
       <Dialog open={open} fullScreen={fullScreen}>
@@ -84,6 +92,7 @@ const Login: React.FC<ILoginProps> = ({ open, handleLoginClose }) => {
           <DialogContentText>
             Zaloguj się aby śledzić autorów i tematy które lubisz, wchodzić w
             interakcje z postami oraz wiele więcej!
+            {renderError()}
           </DialogContentText>
           <LoginForm
             handleEmailChange={handleEmailChange}
