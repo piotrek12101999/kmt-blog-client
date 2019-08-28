@@ -1,7 +1,7 @@
 import Container from "@material-ui/core/Container";
 import Head from "next/head";
 import { useState } from "react";
-import Login from "../Auth/Login/Login";
+import Login from "../auth/Login/Login";
 import Navbar from "../Navbar/Navbar";
 
 interface ILayoutProps {
@@ -11,7 +11,7 @@ interface ILayoutProps {
 }
 
 const Layout: React.FC<ILayoutProps> = ({ children, title, description }) => {
-  const [openLoginDialog, setLoginDialogOpened] = useState(true);
+  const [openLoginDialog, setLoginDialogOpened] = useState<boolean>(false);
 
   const handleLoginOpen = (): void => setLoginDialogOpened(true);
 
