@@ -1,6 +1,8 @@
 import { Button, Container } from "@material-ui/core";
 import Slide from "@material-ui/core/Slide";
 import useScrollTrigger from "@material-ui/core/useScrollTrigger";
+import Cookies from "js-cookie";
+import ProfileMenu from "./ProfileMenu/ProfileMenu";
 
 interface IProps {
   children: React.ReactElement;
@@ -18,9 +20,37 @@ function HideOnScroll({ children }: IProps): JSX.Element {
 
 interface INavbarProps {
   handleLoginOpen: any;
+  handleRegisterOpen: any;
 }
 
-const Navbar: React.FC<INavbarProps> = ({ handleLoginOpen }) => {
+const Navbar: React.FC<INavbarProps> = ({
+  handleLoginOpen,
+  handleRegisterOpen
+}) => {
+  const renderProfile = (): JSX.Element =>
+    Cookies.get("uid") ? (
+      <ProfileMenu />
+    ) : (
+      <>
+        <Button
+          variant="contained"
+          color="primary"
+          className="navbar__wrapper__buttons__button"
+          onClick={handleLoginOpen}
+        >
+          Log in
+        </Button>
+        <Button
+          variant="outlined"
+          color="primary"
+          className="navbar__wrapper__buttons__button"
+          onClick={handleRegisterOpen}
+        >
+          Rejestracja
+        </Button>
+      </>
+    );
+
   return (
     <>
       <HideOnScroll>
@@ -38,21 +68,7 @@ const Navbar: React.FC<INavbarProps> = ({ handleLoginOpen }) => {
                 <Button className="navbar__wrapper__buttons__button">
                   Blog
                 </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  className="navbar__wrapper__buttons__button"
-                  onClick={handleLoginOpen}
-                >
-                  Log in
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  className="navbar__wrapper__buttons__button"
-                >
-                  Rejestracja
-                </Button>
+                {renderProfile()}
               </div>
             </div>
           </Container>

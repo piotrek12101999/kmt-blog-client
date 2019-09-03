@@ -1,14 +1,9 @@
-import { Typography } from "@material-ui/core";
 import Typist from "react-typist";
 
 const Start: React.FC<{}> = () => {
   return (
     <div className="start-section">
-      <Typography
-        variant="h2"
-        component="h1"
-        className="start-section__typography"
-      >
+      <h2 className="start-section__typography">
         <Typist
           cursor={{
             hideWhenDone: true,
@@ -26,7 +21,7 @@ const Start: React.FC<{}> = () => {
         </Typist>
         do zaczęcia swojej przygody z
         <span className="start-section__typography--color"> technologią </span>
-      </Typography>
+      </h2>
     </div>
   );
 };

@@ -28,7 +28,8 @@ const LoginForm: React.FC<ILoginFormProps> = ({
     passwordError: false
   });
 
-  const togglePassword = () => setShowPassword(!showPassword);
+  const togglePassword = (): void =>
+    setShowPassword(prevShowValue => !prevShowValue);
 
   const validateEmail = (emailInputValue: string): boolean => {
     const regex: RegExp = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/i;
@@ -40,8 +41,8 @@ const LoginForm: React.FC<ILoginFormProps> = ({
     return true;
   };
 
-  const setErrors = (fieldName: "email" | "password"): void => {
-    if (fieldName === "email") {
+  const setErrors = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    if (event.target.name === "email") {
       setStateErros({
         ...errors,
         emailError: validateEmail(emailValue)
@@ -51,6 +52,14 @@ const LoginForm: React.FC<ILoginFormProps> = ({
         ...errors,
         passwordError: passwordValue.length < 8
       });
+    }
+  };
+
+  const manageFields = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    if (event.target.name === "email") {
+      handleEmailChange(event);
+    } else {
+      handlePasswordChange(event);
     }
 
     setFieldsValidity(!validateEmail(emailValue) && passwordValue.length >= 8);
@@ -62,14 +71,12 @@ const LoginForm: React.FC<ILoginFormProps> = ({
         error={errors.emailError}
         helperText={errors.emailError ? "Email niepoprawny" : null}
         label="email"
+        name="email"
         type="email"
         required={true}
         value={emailValue}
-        onChange={handleEmailChange}
-        // tslint:disable-next-line:jsx-no-lambda
-        onBlur={() => {
-          setErrors("email");
-        }}
+        onChange={manageFields}
+        onBlur={setErrors}
         margin="normal"
         variant="outlined"
         fullWidth={true}
@@ -80,12 +87,10 @@ const LoginForm: React.FC<ILoginFormProps> = ({
           errors.passwordError ? "Hasło musi mieć minimum 8 znaków" : null
         }
         label="hasło"
+        name="password"
         value={passwordValue}
-        onChange={handlePasswordChange}
-        // tslint:disable-next-line:jsx-no-lambda
-        onBlur={() => {
-          setErrors("password");
-        }}
+        onChange={manageFields}
+        onBlur={setErrors}
         margin="normal"
         type={showPassword ? "text" : "password"}
         variant="outlined"

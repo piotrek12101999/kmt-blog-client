@@ -1,4 +1,4 @@
-import { useMutation } from "@apollo/react-hooks";
+import { useMutation, useQuery } from "@apollo/react-hooks";
 import {
   Button,
   Dialog,
@@ -13,6 +13,7 @@ import {
   useTheme
 } from "@material-ui/core";
 import gql from "graphql-tag";
+import Cookies from "js-cookie";
 import { useState } from "react";
 import LoginForm from "./LoginForm";
 
@@ -23,6 +24,16 @@ const LOG_IN_MUTATION = gql`
       user {
         id
       }
+    }
+  }
+`;
+
+const test = gql`
+  query {
+    users {
+      id
+      name
+      email
     }
   }
 `;
@@ -58,7 +69,9 @@ const Login: React.FC<ILoginProps> = ({ open, handleLoginClose }) => {
     setValue({ ...values, password: event.target.value });
   };
 
-  const [logIn, { loading, error }] = useMutation(LOG_IN_MUTATION);
+  const [logIn, { loading, error, data, called }] = useMutation(
+    LOG_IN_MUTATION
+  );
 
   const handleLogin = (): void => {
     const { email, password } = values;
@@ -83,44 +96,60 @@ const Login: React.FC<ILoginProps> = ({ open, handleLoginClose }) => {
       </Typography>
     ) : null;
 
+  const onLoginActionBeingCalled = () => {
+    if (called && data) {
+      const {
+        logIn: {
+          token,
+          user: { id }
+        }
+      } = data;
+
+      Cookies.set("uid", id);
+      Cookies.set("token", token);
+    }
+    const test2 = useQuery(test);
+    console.log(test2);
+  };
+
+  onLoginActionBeingCalled();
+
   return (
-    <>
-      <Dialog open={open} fullScreen={fullScreen}>
-        {renderLoading()}
-        <DialogTitle>Zaloguj sie </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Zaloguj się aby śledzić autorów i tematy które lubisz, wchodzić w
-            interakcje z postami oraz wiele więcej!
-            {renderError()}
-          </DialogContentText>
-          <LoginForm
-            handleEmailChange={handleEmailChange}
-            handlePasswordChange={handlePasswordChange}
-            emailValue={values.email}
-            passwordValue={values.password}
-            setFieldsValidity={setFieldValidity}
-          />
-          <DialogActions>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={handleLoginClose}
-            >
-              Anuluj
-            </Button>
-            <Button
-              variant="outlined"
-              disabled={!fieldsValid}
-              color="primary"
-              onClick={handleLogin}
-            >
-              Zaloguj się
-            </Button>
-          </DialogActions>
-        </DialogContent>
-      </Dialog>
-    </>
+    <Dialog open={open} onClose={handleLoginClose} fullScreen={fullScreen}>
+      {renderLoading()}
+      <DialogTitle>Zaloguj sie </DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          Zaloguj się aby śledzić autorów i tematy które lubisz, wchodzić w
+          interakcje z postami oraz wiele więcej!
+          {renderError()}
+        </DialogContentText>
+        <LoginForm
+          handleEmailChange={handleEmailChange}
+          handlePasswordChange={handlePasswordChange}
+          emailValue={values.email}
+          passwordValue={values.password}
+          setFieldsValidity={setFieldValidity}
+        />
+        <DialogActions>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={handleLoginClose}
+          >
+            Anuluj
+          </Button>
+          <Button
+            variant="outlined"
+            disabled={!fieldsValid}
+            color="primary"
+            onClick={handleLogin}
+          >
+            Zaloguj się
+          </Button>
+        </DialogActions>
+      </DialogContent>
+    </Dialog>
   );
 };
 
