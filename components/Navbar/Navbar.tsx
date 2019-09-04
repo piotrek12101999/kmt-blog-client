@@ -1,8 +1,15 @@
+import { useQuery } from "@apollo/react-hooks";
 import { Button, Container } from "@material-ui/core";
 import Slide from "@material-ui/core/Slide";
 import useScrollTrigger from "@material-ui/core/useScrollTrigger";
-import Cookies from "js-cookie";
+import gql from "graphql-tag";
 import ProfileMenu from "./ProfileMenu/ProfileMenu";
+
+const IS_AUTHENTICATED = gql`
+  query {
+    auth @client
+  }
+`;
 
 interface IProps {
   children: React.ReactElement;
@@ -27,8 +34,9 @@ const Navbar: React.FC<INavbarProps> = ({
   handleLoginOpen,
   handleRegisterOpen
 }) => {
+  const { data } = useQuery(IS_AUTHENTICATED);
   const renderProfile = (): JSX.Element =>
-    Cookies.get("uid") ? (
+    data.auth ? (
       <ProfileMenu />
     ) : (
       <>
@@ -50,7 +58,6 @@ const Navbar: React.FC<INavbarProps> = ({
         </Button>
       </>
     );
-
   return (
     <>
       <HideOnScroll>

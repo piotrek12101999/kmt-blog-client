@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@apollo/react-hooks";
+import { useApolloClient, useMutation } from "@apollo/react-hooks";
 import {
   Button,
   Dialog,
@@ -12,9 +12,16 @@ import {
   useMediaQuery,
   useTheme
 } from "@material-ui/core";
+import { ApolloClient } from "apollo-boost";
 import gql from "graphql-tag";
 import Cookies from "js-cookie";
 import { useState } from "react";
+import {
+  ILoginFieldValuesState,
+  ILoginProps,
+  ILoginResponse,
+  ILoginVars
+} from "./login.models";
 import LoginForm from "./LoginForm";
 
 const LOG_IN_MUTATION = gql`
@@ -28,26 +35,6 @@ const LOG_IN_MUTATION = gql`
   }
 `;
 
-const test = gql`
-  query {
-    users {
-      id
-      name
-      email
-    }
-  }
-`;
-
-interface ILoginProps {
-  open: boolean;
-  handleLoginClose: any;
-}
-
-interface ILoginFieldValuesState {
-  email: string;
-  password: string;
-}
-
 const Login: React.FC<ILoginProps> = ({ open, handleLoginClose }) => {
   const theme: Theme = useTheme();
   const fullScreen: boolean = useMediaQuery(theme.breakpoints.down("xs"));
@@ -56,6 +43,7 @@ const Login: React.FC<ILoginProps> = ({ open, handleLoginClose }) => {
     password: ""
   });
   const [fieldsValid, setFieldValidity] = useState<boolean>(false);
+  const client: ApolloClient<object> = useApolloClient();
 
   const handleEmailChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -69,14 +57,15 @@ const Login: React.FC<ILoginProps> = ({ open, handleLoginClose }) => {
     setValue({ ...values, password: event.target.value });
   };
 
-  const [logIn, { loading, error, data, called }] = useMutation(
-    LOG_IN_MUTATION
-  );
+  const [logIn, { loading, error }] = useMutation<
+    { logIn: ILoginResponse },
+    { data: ILoginVars }
+  >(LOG_IN_MUTATION);
 
-  const handleLogin = (): void => {
+  const handleLogin = async (): Promise<void> => {
     const { email, password } = values;
 
-    logIn({
+    const { data } = await logIn({
       variables: {
         data: {
           email,
@@ -84,6 +73,19 @@ const Login: React.FC<ILoginProps> = ({ open, handleLoginClose }) => {
         }
       }
     });
+    if (data) {
+      const {
+        token,
+        user: { id }
+      } = data.logIn;
+
+      Cookies.set("token", token);
+      Cookies.set("id", id);
+
+      await client.resetStore();
+      client.writeData({ data: { auth: true } });
+      handleLoginClose();
+    }
   };
 
   const renderLoading = (): JSX.Element | null =>
@@ -91,28 +93,13 @@ const Login: React.FC<ILoginProps> = ({ open, handleLoginClose }) => {
 
   const renderError = (): JSX.Element | null =>
     error ? (
-      <Typography color="secondary">
-        {error.message ? error.message : "Nieznany błąd, spróbuj później!"}
-      </Typography>
+      <>
+        <br />
+        <Typography component="span" variant="body1" color="secondary">
+          {error.message ? error.message : "Nieznany błąd, spróbuj później!"}
+        </Typography>
+      </>
     ) : null;
-
-  const onLoginActionBeingCalled = () => {
-    if (called && data) {
-      const {
-        logIn: {
-          token,
-          user: { id }
-        }
-      } = data;
-
-      Cookies.set("uid", id);
-      Cookies.set("token", token);
-    }
-    const test2 = useQuery(test);
-    console.log(test2);
-  };
-
-  onLoginActionBeingCalled();
 
   return (
     <Dialog open={open} onClose={handleLoginClose} fullScreen={fullScreen}>
