@@ -1,12 +1,22 @@
-import Layout from "../components/Layout/Layout";
-import StartSection from "../components/Sections/Start/Start";
+import { NextPage } from "next";
+import checkLoggedIn from "../auth/checkLoggedIn";
+import { withApollo } from "../lib/apollo";
 
-const Index = () => {
-  return (
-    <Layout title="index" description="this is index page">
-      <StartSection />
-    </Layout>
-  );
+interface IIndexProps {
+  loggedInUser: any;
+}
+
+const Index: NextPage<IIndexProps> = ({ loggedInUser }) => {
+  return <div> {loggedInUser.user.name} </div>;
 };
 
-export default Index;
+Index.getInitialProps = async (context: any) => {
+  const { loggedInUser } = await checkLoggedIn(
+    context.apolloClient,
+    "cjzlp8q3q002s0750l8ywaiw7"
+  );
+
+  return { loggedInUser };
+};
+
+export default withApollo(Index);
