@@ -1,7 +1,14 @@
 @import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700&display=swap');
 
+@import './partials';
 @import "./variables.scss";
+@import "../components/container/Container.scss";
 
-@import "../components/Layout/Layout.scss";
-@import "../components/Navbar/Navbar.scss";
-@import "../components/Sections/Start/Start.scss";
+.navbar {
+    width: 100%;
+    height: 64px;
+    position: fixed;
+    display: flex;
+    align-items: center;
+    background-color: red;
+}

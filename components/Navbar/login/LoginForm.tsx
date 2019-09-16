@@ -1,13 +1,11 @@
 import { IconButton, InputAdornment, TextField } from "@material-ui/core";
 import { Visibility, VisibilityOff } from "@material-ui/icons";
 import { Dispatch, SetStateAction, useState } from "react";
+import { ILoginFieldValuesState } from "./Login";
 
 interface ILoginFormProps {
-  emailValue: string;
-  passwordValue: string;
-  handleEmailChange: any;
-  handlePasswordChange: any;
-  setFieldsValidity: Dispatch<SetStateAction<boolean>>;
+  fieldsState: ILoginFieldValuesState;
+  setFieldsState: Dispatch<SetStateAction<ILoginFieldValuesState>>;
 }
 
 interface ILoginFormErrorState {
@@ -16,85 +14,84 @@ interface ILoginFormErrorState {
 }
 
 const LoginForm: React.FC<ILoginFormProps> = ({
-  emailValue,
-  passwordValue,
-  handleEmailChange,
-  handlePasswordChange,
-  setFieldsValidity
+  fieldsState,
+  setFieldsState
 }) => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [errors, setStateErros] = useState<ILoginFormErrorState>({
     emailError: false,
     passwordError: false
   });
-
   const togglePassword = (): void =>
     setShowPassword(prevShowValue => !prevShowValue);
 
   const validateEmail = (emailInputValue: string): boolean => {
-    const regex: RegExp = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/i;
+    const regexp: RegExp = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/i;
 
-    if (regex.test(emailInputValue)) {
-      return false;
-    }
-
-    return true;
+    return regexp.test(emailInputValue);
   };
 
   const setErrors = (event: React.ChangeEvent<HTMLInputElement>): void => {
     if (event.target.name === "email") {
       setStateErros({
         ...errors,
-        emailError: validateEmail(emailValue)
+        emailError: !validateEmail(fieldsState.email)
       });
     } else {
       setStateErros({
         ...errors,
-        passwordError: passwordValue.length < 8
+        passwordError: fieldsState.password.length < 8
       });
     }
   };
 
   const manageFields = (event: React.ChangeEvent<HTMLInputElement>): void => {
     if (event.target.name === "email") {
-      handleEmailChange(event);
+      setFieldsState({
+        ...fieldsState,
+        email: event.target.value,
+        emailValid: validateEmail(event.target.value)
+      });
     } else {
-      handlePasswordChange(event);
+      setFieldsState({
+        ...fieldsState,
+        password: event.target.value,
+        passwordValid: event.target.value.length >= 8
+      });
     }
-
-    setFieldsValidity(!validateEmail(emailValue) && passwordValue.length >= 8);
   };
 
   return (
     <>
       <TextField
-        error={errors.emailError}
-        helperText={errors.emailError ? "Email niepoprawny" : null}
         label="email"
         name="email"
         type="email"
-        required={true}
-        value={emailValue}
-        onChange={manageFields}
-        onBlur={setErrors}
-        margin="normal"
         variant="outlined"
+        margin="normal"
+        required={true}
         fullWidth={true}
+        onChange={manageFields}
+        value={fieldsState.email}
+        onBlur={setErrors}
+        error={errors.emailError}
+        helperText={errors.emailError ? "Email niepoprawny" : null}
       />
       <TextField
+        label="hasło"
+        name="password"
+        type={showPassword ? "text" : "password"}
+        variant="outlined"
+        margin="normal"
+        required={true}
+        fullWidth={true}
+        onChange={manageFields}
+        value={fieldsState.password}
+        onBlur={setErrors}
         error={errors.passwordError}
         helperText={
           errors.passwordError ? "Hasło musi mieć minimum 8 znaków" : null
         }
-        label="hasło"
-        name="password"
-        value={passwordValue}
-        onChange={manageFields}
-        onBlur={setErrors}
-        margin="normal"
-        type={showPassword ? "text" : "password"}
-        variant="outlined"
-        fullWidth={true}
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">

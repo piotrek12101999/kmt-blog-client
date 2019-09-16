@@ -1,44 +1,40 @@
-import Container from "@material-ui/core/Container";
 import Head from "next/head";
-import { useState } from "react";
-import Login from "../auth/Login/Login";
-import Register from "../auth/Register/Register";
-import Navbar from "../Navbar/Navbar";
+import { IUser } from "../../models/user.model";
+import Container from "../container/Container";
+import Navbar from "../navbar/Navbar";
 
 interface ILayoutProps {
   children: JSX.Element[] | JSX.Element;
   title: string;
   description: string;
+  loggedInUser: {
+    user: IUser;
+  };
 }
 
-const Layout: React.FC<ILayoutProps> = ({ children, title, description }) => {
-  const [openLoginDialog, setLoginDialogOpened] = useState<boolean>(false);
-  const [openRegisterDialog, setOpenRegisterDialog] = useState<boolean>(false);
-
-  const handleLoginOpen = (): void => setLoginDialogOpened(true);
-
-  const handleLoginClose = (): void => setLoginDialogOpened(false);
-
-  const handleRegisterOpen = (): void => setOpenRegisterDialog(true);
-
-  const handleRegisterClose = (): void => setOpenRegisterDialog(false);
-
+const Layout: React.FC<ILayoutProps> = ({
+  children,
+  title,
+  description,
+  loggedInUser
+}) => {
   return (
     <>
       <Head>
         <title> {title} </title>
         <meta name="description" content={description} />
       </Head>
-      <Navbar
-        handleLoginOpen={handleLoginOpen}
-        handleRegisterOpen={handleRegisterOpen}
-      />
-      <Container className="content">{children}</Container>
-      <Login open={openLoginDialog} handleLoginClose={handleLoginClose} />
-      <Register
-        open={openRegisterDialog}
-        handleRegisterClose={handleRegisterClose}
-      />
+      <Navbar loggedInUser={loggedInUser} />
+      <Container> {children} </Container>
+      <style global={true} jsx={true}>{`
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: "Source Sans Pro", sans-serif;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+      `}</style>
     </>
   );
 };
