@@ -1,8 +1,20 @@
+import { useLazyQuery } from "@apollo/react-hooks";
 import { Slide, useScrollTrigger } from "@material-ui/core";
+import gql from "graphql-tag";
 import { useState } from "react";
 import { IUser } from "../../models/user.model";
 import Container from "../container/Container";
 import Login from "./login/Login";
+import Register from "./register/Register";
+
+const GET_USER = gql`
+  query user($id: ID!) {
+    user(id: $id) {
+      id
+      name
+    }
+  }
+`;
 
 interface IProps {
   children: React.ReactElement;
@@ -26,10 +38,17 @@ interface INavbarProps {
 
 const Navbar: React.FC<INavbarProps> = ({ loggedInUser }) => {
   const [openLogin, setLoginOpen] = useState<boolean>(false);
+  const [openRegister, setRegisterOpen] = useState<boolean>(false);
 
   const handleOpenLogin = (): void => setLoginOpen(true);
 
   const handleCloseLogin = (): void => setLoginOpen(false);
+
+  const handleOpenRegister = (): void => setRegisterOpen(true);
+
+  const handleCloseRegister = (): void => setRegisterOpen(false);
+
+  const [getUserThatHasLoggedIn, { data }] = useLazyQuery(GET_USER);
 
   return (
     <>
@@ -42,7 +61,7 @@ const Navbar: React.FC<INavbarProps> = ({ loggedInUser }) => {
                 <div className="navbar__wrapper__buttons__button"> O nas </div>
                 <div className="navbar__wrapper__buttons__button">Galeria</div>
                 <div className="navbar__wrapper__buttons__button"> Blog </div>
-                {loggedInUser.user ? (
+                {loggedInUser.user || data ? (
                   "logged"
                 ) : (
                   <>
@@ -52,7 +71,10 @@ const Navbar: React.FC<INavbarProps> = ({ loggedInUser }) => {
                     >
                       Zaloguj się
                     </div>
-                    <div className="navbar__wrapper__buttons__button--register">
+                    <div
+                      onClick={handleOpenRegister}
+                      className="navbar__wrapper__buttons__button--register"
+                    >
                       Rejestracja
                     </div>
                   </>
@@ -62,7 +84,16 @@ const Navbar: React.FC<INavbarProps> = ({ loggedInUser }) => {
           </Container>
         </nav>
       </HideOnScroll>
-      <Login open={openLogin} closeLogin={handleCloseLogin} />
+      <Login
+        open={openLogin}
+        getUserThatHasLoggedIn={getUserThatHasLoggedIn}
+        closeLogin={handleCloseLogin}
+      />
+      <Register
+        open={openRegister}
+        getUserThatHasLoggedIn={getUserThatHasLoggedIn}
+        closeRegister={handleCloseRegister}
+      />
       <style jsx={true}>{`
         .navbar {
           width: 100%;

@@ -1,4 +1,8 @@
-import { useApolloClient, useMutation } from "@apollo/react-hooks";
+import {
+  QueryLazyOptions,
+  useApolloClient,
+  useMutation
+} from "@apollo/react-hooks";
 import {
   Button,
   Dialog,
@@ -6,7 +10,9 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  LinearProgress,
   Theme,
+  Typography,
   useMediaQuery,
   useTheme
 } from "@material-ui/core";
@@ -14,6 +20,7 @@ import { ApolloClient } from "apollo-boost";
 import cookie from "cookie";
 import gql from "graphql-tag";
 import { useState } from "react";
+import { IAuthPayload } from "../../../models/user.model";
 import LoginForm from "./LoginForm";
 
 const LOG_IN = gql`
@@ -30,6 +37,9 @@ const LOG_IN = gql`
 interface ILoginProps {
   open: boolean;
   closeLogin: () => void;
+  getUserThatHasLoggedIn: (
+    options?: QueryLazyOptions<Record<string, any>> | undefined
+  ) => void;
 }
 
 export interface ILoginFieldValuesState {
@@ -39,7 +49,16 @@ export interface ILoginFieldValuesState {
   passwordValid: boolean;
 }
 
-const Login: React.FC<ILoginProps> = ({ open, closeLogin }) => {
+interface ILoginVars {
+  email: string;
+  password: string;
+}
+
+const Login: React.FC<ILoginProps> = ({
+  open,
+  closeLogin,
+  getUserThatHasLoggedIn
+}) => {
   const client: ApolloClient<object> = useApolloClient();
   const theme: Theme = useTheme();
   const fullScreen: boolean = useMediaQuery(theme.breakpoints.down("xs"));
@@ -49,30 +68,32 @@ const Login: React.FC<ILoginProps> = ({ open, closeLogin }) => {
     password: "",
     passwordValid: false
   });
-  const onError = (error: Error): void => {
-    console.error(error);
-  };
-  const onCompleted = async (data: any): Promise<void> => {
+
+  const onCompleted = async (data: { logIn: IAuthPayload }): Promise<void> => {
     document.cookie = cookie.serialize("token", data.logIn.token, {
-      sameSite: true,
+      maxAge: 7 * 24 * 60 * 60, // 7 days
       path: "/",
-      maxAge: 7 * 24 * 60 * 60 // 7 days
+      sameSite: true
     });
 
     document.cookie = cookie.serialize("uid", data.logIn.user.id, {
-      sameSite: true,
+      maxAge: 7 * 24 * 60 * 60, // 7 days
       path: "/",
-      maxAge: 7 * 24 * 60 * 60 // 7 days
+      sameSite: true
     });
 
     await client.cache.reset();
 
     client.writeData({ data: { UserLocalData: data.logIn.user.id } });
+    getUserThatHasLoggedIn({ variables: { id: data.logIn.user.id } });
     closeLogin();
   };
-  const [loginUser] = useMutation(LOG_IN, {
-    onCompleted,
-    onError
+
+  const [loginUser, { loading, error }] = useMutation<
+    { logIn: IAuthPayload },
+    { data: ILoginVars }
+  >(LOG_IN, {
+    onCompleted
   });
 
   const handleCloseLogin = (): void => {
@@ -86,7 +107,7 @@ const Login: React.FC<ILoginProps> = ({ open, closeLogin }) => {
     closeLogin();
   };
 
-  const handleLogin = () => {
+  const handleLogin = (): void => {
     const { email, password } = fieldsState;
 
     loginUser({
@@ -99,14 +120,22 @@ const Login: React.FC<ILoginProps> = ({ open, closeLogin }) => {
     });
   };
 
+  const renderLoading = (): JSX.Element | null =>
+    loading ? <LinearProgress /> : null;
+
+  const renderError = (): JSX.Element | null =>
+    error ? <Typography color="error"> {error.message} </Typography> : null;
+
   return (
     <Dialog fullScreen={fullScreen} onClose={handleCloseLogin} open={open}>
+      {renderLoading()}
       <DialogTitle>Zaloguj się </DialogTitle>
       <DialogContent>
         <DialogContentText>
           Zaloguj się aby śledzić autorów i tematy które lubisz, wchodzić w
           interakcje z postami oraz wiele więcej!
         </DialogContentText>
+        {renderError()}
         <LoginForm fieldsState={fieldsState} setFieldsState={setFieldsState} />
         <DialogActions>
           <Button
