@@ -188,7 +188,7 @@ const RegisterStepper: React.FC<IRegisterStepperProps> = ({
     }
   });
 
-  const handleRegister = async () => {
+  const handleRegister = (): void => {
     const { profilePicture } = fieldsState;
 
     if (profilePicture) {
