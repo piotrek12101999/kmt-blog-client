@@ -1,5 +1,4 @@
 import Head from "next/head";
-import { IUser } from "../../models/user.model";
 import Container from "../container/Container";
 import Navbar from "../navbar/Navbar";
 
@@ -7,24 +6,16 @@ interface ILayoutProps {
   children: JSX.Element[] | JSX.Element;
   title: string;
   description: string;
-  loggedInUser: {
-    user: IUser;
-  };
 }
 
-const Layout: React.FC<ILayoutProps> = ({
-  children,
-  title,
-  description,
-  loggedInUser
-}) => {
+const Layout: React.FC<ILayoutProps> = ({ children, title, description }) => {
   return (
     <>
       <Head>
         <title> {title} </title>
         <meta name="description" content={description} />
       </Head>
-      <Navbar loggedInUser={loggedInUser} />
+      <Navbar />
       <Container> {children} </Container>
       <style global={true} jsx={true}>{`
         body {

@@ -1,20 +1,13 @@
-import { useLazyQuery } from "@apollo/react-hooks";
+import { useApolloClient, useQuery } from "@apollo/react-hooks";
 import { Slide, useScrollTrigger } from "@material-ui/core";
-import gql from "graphql-tag";
+import { ApolloClient } from "apollo-boost";
+import cookie from "cookie";
 import { useState } from "react";
-import { IUser } from "../../models/user.model";
+import { GET_LOGGED_IN_USER } from "../../lib/clientQueries";
 import Container from "../container/Container";
+import Avatar from "./avatar/Avatar";
 import Login from "./login/Login";
 import Register from "./register/Register";
-
-const GET_USER = gql`
-  query user($id: ID!) {
-    user(id: $id) {
-      id
-      name
-    }
-  }
-`;
 
 interface IProps {
   children: React.ReactElement;
@@ -30,15 +23,11 @@ function HideOnScroll({ children }: IProps): JSX.Element {
   );
 }
 
-interface INavbarProps {
-  loggedInUser: {
-    user: IUser;
-  };
-}
-
-const Navbar: React.FC<INavbarProps> = ({ loggedInUser }) => {
+const Navbar: React.FC = () => {
+  const client: ApolloClient<object> = useApolloClient();
   const [openLogin, setLoginOpen] = useState<boolean>(false);
   const [openRegister, setRegisterOpen] = useState<boolean>(false);
+  const { data } = useQuery(GET_LOGGED_IN_USER);
 
   const handleOpenLogin = (): void => setLoginOpen(true);
 
@@ -48,7 +37,16 @@ const Navbar: React.FC<INavbarProps> = ({ loggedInUser }) => {
 
   const handleCloseRegister = (): void => setRegisterOpen(false);
 
-  const [getUserThatHasLoggedIn, { data }] = useLazyQuery(GET_USER);
+  const handleLogOut = async () => {
+    document.cookie = cookie.serialize("token", "", {
+      maxAge: -1
+    });
+    document.cookie = cookie.serialize("uid", "", {
+      maxAge: -1
+    });
+    await client.cache.reset();
+    await client.resetStore();
+  };
 
   return (
     <>
@@ -58,11 +56,20 @@ const Navbar: React.FC<INavbarProps> = ({ loggedInUser }) => {
             <div className="navbar__wrapper">
               <div className="navbar__wrapper__logo">Klub Młodego Technika</div>
               <div className="navbar__wrapper__buttons">
-                <div className="navbar__wrapper__buttons__button"> O nas </div>
-                <div className="navbar__wrapper__buttons__button">Galeria</div>
-                <div className="navbar__wrapper__buttons__button"> Blog </div>
-                {loggedInUser.user || data ? (
-                  "logged"
+                <div className="navbar__wrapper__buttons__button">
+                  <span>O nas </span>
+                </div>
+                <div className="navbar__wrapper__buttons__button">
+                  <span>Galeria </span>
+                </div>
+                <div className="navbar__wrapper__buttons__button">
+                  <span> Blog </span>
+                </div>
+                {data.loggedInUser.id !== null ? (
+                  <Avatar
+                    loggedInUser={data.loggedInUser}
+                    handleLogOut={handleLogOut}
+                  />
                 ) : (
                   <>
                     <div
@@ -84,16 +91,8 @@ const Navbar: React.FC<INavbarProps> = ({ loggedInUser }) => {
           </Container>
         </nav>
       </HideOnScroll>
-      <Login
-        open={openLogin}
-        getUserThatHasLoggedIn={getUserThatHasLoggedIn}
-        closeLogin={handleCloseLogin}
-      />
-      <Register
-        open={openRegister}
-        getUserThatHasLoggedIn={getUserThatHasLoggedIn}
-        closeRegister={handleCloseRegister}
-      />
+      <Login open={openLogin} closeLogin={handleCloseLogin} />
+      <Register open={openRegister} closeRegister={handleCloseRegister} />
       <style jsx={true}>{`
         .navbar {
           width: 100%;
@@ -133,6 +132,16 @@ const Navbar: React.FC<INavbarProps> = ({ loggedInUser }) => {
           color: #666666;
           padding: 8px 16px;
           transition: color 0.15s ease-in;
+        }
+
+        .navbar
+          .navbar__wrapper
+          .navbar__wrapper__buttons
+          .navbar__wrapper__buttons__button
+          span {
+          display: flex;
+          align-items: center;
+          height: 100%;
         }
 
         .navbar

@@ -1,6 +1,6 @@
-import { Button, Fab } from "@material-ui/core";
+import { Button } from "@material-ui/core";
 import { CloudUpload } from "@material-ui/icons";
-import { createRef, Dispatch, RefObject, SetStateAction } from "react";
+import { Dispatch, SetStateAction } from "react";
 import { IRegisterStepperState } from "../RegisterStepper";
 
 interface IUploadPictureProps {
@@ -16,11 +16,6 @@ const UploadPicture: React.FC<IUploadPictureProps> = ({
   setFieldsState,
   registerUser
 }) => {
-  const inputRef: RefObject<HTMLInputElement> = createRef();
-
-  const handleFabClick = (): void | null =>
-    inputRef.current ? inputRef.current.click() : null;
-
   const handleInputChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ): void => {
@@ -58,7 +53,6 @@ const UploadPicture: React.FC<IUploadPictureProps> = ({
         accept="image/*"
         className="upload-picture__input-hidden"
         id="icon-button-file"
-        ref={inputRef}
         type="file"
         onChange={handleInputChange}
       />
@@ -66,16 +60,9 @@ const UploadPicture: React.FC<IUploadPictureProps> = ({
         htmlFor="icon-button-file"
         className="upload-picture__fab-container"
       >
-        <Fab
-          className="upload-picture__fab"
-          variant="extended"
-          color="primary"
-          aria-label="delete"
-          onClick={handleFabClick}
-        >
-          <CloudUpload style={{ marginRight: 10 }} />
-          Upload!
-        </Fab>
+        <div className="upload-picture__fab-container__fab">
+          <CloudUpload style={{ marginRight: 15 }} /> Upload
+        </div>
       </label>
       {renderFileDetails()}
       <Button
@@ -115,6 +102,20 @@ const UploadPicture: React.FC<IUploadPictureProps> = ({
             display: flex;
             justify-content: center;
             margin-bottom: 15px;
+          }
+          .upload-picture__fab-container__fab {
+            height: 40px;
+            width: 128px;
+            border-radius: 24px;
+            background-color: #0070f3;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0px 1px 5px 0px rgba(0, 0, 0, 0.2),
+              0px 2px 2px 0px rgba(0, 0, 0, 0.14),
+              0px 3px 1px -2px rgba(0, 0, 0, 0.12);
           }
         `}
       </style>

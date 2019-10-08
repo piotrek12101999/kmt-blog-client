@@ -1,8 +1,4 @@
-import {
-  QueryLazyOptions,
-  useApolloClient,
-  useMutation
-} from "@apollo/react-hooks";
+import { useApolloClient, useMutation } from "@apollo/react-hooks";
 import {
   Button,
   Dialog,
@@ -20,6 +16,7 @@ import { ApolloClient } from "apollo-boost";
 import cookie from "cookie";
 import gql from "graphql-tag";
 import { useState } from "react";
+import { SET_LOGGED_IN_USER } from "../../../lib/clientQueries";
 import { IAuthPayload } from "../../../models/user.model";
 import LoginForm from "./LoginForm";
 
@@ -29,6 +26,10 @@ const LOG_IN = gql`
       token
       user {
         id
+        name
+        email
+        profile_picture
+        description
       }
     }
   }
@@ -37,9 +38,6 @@ const LOG_IN = gql`
 interface ILoginProps {
   open: boolean;
   closeLogin: () => void;
-  getUserThatHasLoggedIn: (
-    options?: QueryLazyOptions<Record<string, any>> | undefined
-  ) => void;
 }
 
 export interface ILoginFieldValuesState {
@@ -54,11 +52,7 @@ interface ILoginVars {
   password: string;
 }
 
-const Login: React.FC<ILoginProps> = ({
-  open,
-  closeLogin,
-  getUserThatHasLoggedIn
-}) => {
+const Login: React.FC<ILoginProps> = ({ open, closeLogin }) => {
   const client: ApolloClient<object> = useApolloClient();
   const theme: Theme = useTheme();
   const fullScreen: boolean = useMediaQuery(theme.breakpoints.down("xs"));
@@ -83,9 +77,18 @@ const Login: React.FC<ILoginProps> = ({
     });
 
     await client.cache.reset();
-
-    client.writeData({ data: { UserLocalData: data.logIn.user.id } });
-    getUserThatHasLoggedIn({ variables: { id: data.logIn.user.id } });
+    await client.resetStore();
+    setUser({
+      variables: {
+        loggedInUser: data.logIn.user
+      }
+    });
+    setFieldsState({
+      email: "",
+      emailValid: false,
+      password: "",
+      passwordValid: false
+    });
     closeLogin();
   };
 
@@ -95,6 +98,7 @@ const Login: React.FC<ILoginProps> = ({
   >(LOG_IN, {
     onCompleted
   });
+  const [setUser] = useMutation(SET_LOGGED_IN_USER);
 
   const handleCloseLogin = (): void => {
     setFieldsState({

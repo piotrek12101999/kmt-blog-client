@@ -10,8 +10,7 @@ const GET_UID = gql`
   }
 `;
 
-const About = (props: any) => {
-  console.log(props);
+const About = () => {
   return (
     <div>
       test
@@ -31,10 +30,7 @@ About.getInitialProps = async ({ req, apolloClient }: any) => {
   }
 
   const { data } = await apolloClient.query({ query: GET_UID });
-  const { loggedInUser } = await checkLoggedIn(
-    apolloClient,
-    data.UserLocalData
-  );
+  const loggedInUser = await checkLoggedIn(apolloClient, data.UserLocalData);
 
   return { loggedInUser };
 };

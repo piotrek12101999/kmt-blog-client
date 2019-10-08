@@ -1,4 +1,3 @@
-import { QueryLazyOptions } from "@apollo/react-hooks";
 import {
   Dialog,
   DialogContent,
@@ -14,16 +13,9 @@ import RegisterStepper from "./RegisterStepper";
 interface IRegisterProps {
   open: boolean;
   closeRegister: () => void;
-  getUserThatHasLoggedIn: (
-    options?: QueryLazyOptions<Record<string, any>> | undefined
-  ) => void;
 }
 
-const Register: React.FC<IRegisterProps> = ({
-  open,
-  closeRegister,
-  getUserThatHasLoggedIn
-}) => {
+const Register: React.FC<IRegisterProps> = ({ open, closeRegister }) => {
   const [isLoading, setIsLoggedIn] = useState<boolean>(false);
   const theme: Theme = useTheme();
   const fullScreen: boolean = useMediaQuery(theme.breakpoints.down("xs"));
@@ -37,7 +29,6 @@ const Register: React.FC<IRegisterProps> = ({
       <DialogTitle>Zarejestruj się </DialogTitle>
       <DialogContent>
         <RegisterStepper
-          getUserThatHasLoggedIn={getUserThatHasLoggedIn}
           closeRegister={closeRegister}
           setIsLoggedIn={setIsLoggedIn}
         />

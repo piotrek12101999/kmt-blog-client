@@ -1,8 +1,4 @@
-import {
-  QueryLazyOptions,
-  useApolloClient,
-  useMutation
-} from "@apollo/react-hooks";
+import { useApolloClient, useMutation } from "@apollo/react-hooks";
 import {
   Step,
   StepContent,
@@ -14,6 +10,7 @@ import { ApolloClient } from "apollo-boost";
 import cookie from "cookie";
 import gql from "graphql-tag";
 import { Dispatch, SetStateAction, useState } from "react";
+import { SET_LOGGED_IN_USER } from "../../../lib/clientQueries";
 import firebase from "../../../lib/getFirebase";
 import { IAuthPayload } from "../../../models/user.model";
 import FirstStep from "./RegisterSteps/EmailAndPassword";
@@ -26,6 +23,10 @@ const REGISTER = gql`
       token
       user {
         id
+        name
+        email
+        profile_picture
+        description
       }
     }
   }
@@ -33,9 +34,6 @@ const REGISTER = gql`
 
 interface IRegisterStepperProps {
   closeRegister: () => void;
-  getUserThatHasLoggedIn: (
-    options?: QueryLazyOptions<Record<string, any>> | undefined
-  ) => void;
   setIsLoggedIn: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -96,7 +94,6 @@ function getStepContent(
 }
 
 const RegisterStepper: React.FC<IRegisterStepperProps> = ({
-  getUserThatHasLoggedIn,
   closeRegister,
   setIsLoggedIn
 }) => {
@@ -140,15 +137,31 @@ const RegisterStepper: React.FC<IRegisterStepperProps> = ({
     });
 
     await client.cache.reset();
+    await client.resetStore();
 
-    client.writeData({ data: { UserLocalData: data.createUser.user.id } });
-    getUserThatHasLoggedIn({ variables: { id: data.createUser.user.id } });
+    setUser({
+      variables: {
+        loggedInUser: data.createUser.user
+      }
+    });
+    setFieldsState({
+      description: "",
+      email: "",
+      emailValid: false,
+      name: "",
+      password: "",
+      passwordRepeat: "",
+      passwordValid: false,
+      passwordsValid: false,
+      profilePicture: null
+    });
     closeRegister();
   };
 
   const [registerUser, { loading, error }] = useMutation(REGISTER, {
     onCompleted
   });
+  const [setUser] = useMutation(SET_LOGGED_IN_USER);
 
   setIsLoggedIn(loading);
 
@@ -156,10 +169,11 @@ const RegisterStepper: React.FC<IRegisterStepperProps> = ({
     error ? <Typography color="error"> {error.message} </Typography> : null;
 
   const uploadProfilePicture = (profilePicture: File): void => {
+    setIsLoggedIn(false);
     const uploadedImage: firebase.storage.UploadTask = firebase
       .storage()
       .ref()
-      .child(`profile-pictures/${profilePicture.name}`)
+      .child(`profile-pictures/${profilePicture.name}-${new Date().getTime()}`)
       .put(profilePicture);
 
     uploadedImage.on("state_changed", null, null, async () => {

@@ -1,31 +1,38 @@
-import gql from "graphql-tag";
+import { useMutation } from "@apollo/react-hooks";
+import { omit } from "lodash";
 import { NextPage } from "next";
 import Link from "next/link";
 import React from "react";
+import { useEffect } from "react";
 import checkLoggedIn from "../auth/checkLoggedIn";
 import Layout from "../components/layout/Layout";
 import { withApollo } from "../lib/apollo";
+import { SET_LOGGED_IN_USER } from "../lib/clientQueries";
 import getUID from "../lib/getUID";
 import { IPageContext } from "../models/page.model";
-
-const GET_UID = gql`
-  {
-    UserLocalData @client
-  }
-`;
+import { IUser } from "../models/user.model";
 
 interface IIndexProps {
-  loggedInUser: any;
+  loggedInUser: IUser | {};
 }
 
 const Index: NextPage<IIndexProps> = ({ loggedInUser }) => {
+  const [setUser] = useMutation(SET_LOGGED_IN_USER);
+
+  useEffect(() => {
+    // @ts-ignore
+    if (loggedInUser.id) {
+      setUser({
+        variables: {
+          loggedInUser
+        }
+      });
+    }
+  }, []);
+
   return (
-    <Layout
-      title="index"
-      description="this is index site"
-      loggedInUser={loggedInUser}
-    >
-      <div style={{ marginBottom: 300 }}> lorem*99 </div>
+    <Layout title="index" description="this is index site">
+      <div style={{ paddingTop: 300 }}> lorem*99</div>
       <Link href="/about">
         <a> about </a>
       </Link>
@@ -35,19 +42,16 @@ const Index: NextPage<IIndexProps> = ({ loggedInUser }) => {
 
 Index.getInitialProps = async ({ req, apolloClient }: IPageContext) => {
   if (req) {
-    apolloClient.writeData({
-      // @ts-ignore
-      data: { UserLocalData: getUID(req.headers.cookie) }
-    });
+    const loggedInUser = await checkLoggedIn(
+      apolloClient,
+      getUID(req.headers.cookie || "")
+    );
+    // @ts-ignore
+    const dataToPassDown = omit(loggedInUser.loggedInUser.user, "__typename");
+    return { loggedInUser: dataToPassDown };
   }
-  const { data } = await apolloClient.query({ query: GET_UID });
 
-  const { loggedInUser } = await checkLoggedIn(
-    apolloClient,
-    data.UserLocalData
-  );
-
-  return { loggedInUser };
+  return { loggedInUser: {} };
 };
 
 export default withApollo(Index);
