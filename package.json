@@ -7,6 +7,9 @@
     "dev": "next",
     "build": "next build",
     "start": "next start",
+    "analyze": "cross-env ANALYZE=true next build",
+    "analyze:server": "cross-env BUNDLE_ANALYZE=server next build",
+    "analyze:browser": "cross-env BUNDLE_ANALYZE=browser next build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -17,6 +20,7 @@
   "license": "MIT",
   "homepage": "https://github.com/piotrek12101999/kmt-blog-client#readme",
   "dependencies": {
+    "@next/bundle-analyzer": "^9.0.7",
     "@apollo/react-hooks": "^3.0.1",
     "@apollo/react-ssr": "^3.0.1",
     "@material-ui/core": "latest",
@@ -26,12 +30,12 @@
     "apollo-link-context": "^1.0.8",
     "clsx": "latest",
     "cookie": "^0.3.1",
+    "cross-env": "^5.2.0",
     "express": "^4.17.1",
     "firebase": "^6.6.2",
     "graphql": "^14.5.0",
     "https-proxy-agent": "^2.2.1",
     "isomorphic-unfetch": "^3.0.0",
-    "lodash": "^4.17.15",
     "next": "^9.0.2",
     "react": "^16.8.6",
     "react-dom": "^16.8.6"

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { IUser } from "../../../models/user.model";
 
 interface IAvatarProps {
-  loggedInUser: IUser | null;
+  loggedInUser: IUser;
   handleLogOut: () => void;
 }
 
@@ -17,8 +17,6 @@ const Avatar: React.FC<IAvatarProps> = ({ loggedInUser, handleLogOut }) => {
   const handleClose = () => {
     setAnchorEl(null);
   };
-
-  console.log(loggedInUser);
 
   return (
     <>
@@ -41,7 +39,8 @@ const Avatar: React.FC<IAvatarProps> = ({ loggedInUser, handleLogOut }) => {
           height: 40px;
           width: 40px;
           border-radius: 100%;
-          background-image: url("https://firebasestorage.googleapis.com/v0/b/kmt-blog.appspot.com/o/profile-pictures%2F512x512bb.jpg?alt=media&token=b6d3915e-0363-4dac-b9b2-a5ae059b5dbd");
+          background-image: url(${loggedInUser.profile_picture ||
+            "/static/default_profile_picture.jpg"});
           background-repeat: no-repeat;
           background-position: center center;
           background-size: contain;

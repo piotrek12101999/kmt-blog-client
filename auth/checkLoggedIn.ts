@@ -17,7 +17,7 @@ interface IUserVariables {
 export default async (
   apolloClient: ApolloClient<object>,
   id: string
-): Promise<{ data: IUserData } | { loggedInUser: {} }> => {
+): Promise<IUserData | {}> => {
   const GET_USER_QUERY = gql`
     query user($id: ID!) {
       user(id: $id) {
@@ -38,8 +38,8 @@ export default async (
       }
     });
 
-    return { loggedInUser: data };
+    return data;
   } catch (error) {
-    return { loggedInUser: {} };
+    return {};
   }
 };

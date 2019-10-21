@@ -48,6 +48,14 @@ const Navbar: React.FC = () => {
     await client.resetStore();
   };
 
+  const checkIfUserIsLoggedIn = () => {
+    if (data.loggedInUser) {
+      return data.loggedInUser.id !== null;
+    }
+
+    return false;
+  };
+
   return (
     <>
       <HideOnScroll>
@@ -65,7 +73,7 @@ const Navbar: React.FC = () => {
                 <div className="navbar__wrapper__buttons__button">
                   <span> Blog </span>
                 </div>
-                {data.loggedInUser.id !== null ? (
+                {checkIfUserIsLoggedIn() ? (
                   <Avatar
                     loggedInUser={data.loggedInUser}
                     handleLogOut={handleLogOut}

@@ -1,5 +1,4 @@
 import { useMutation } from "@apollo/react-hooks";
-import { omit } from "lodash";
 import { NextPage } from "next";
 import Link from "next/link";
 import React from "react";
@@ -20,11 +19,11 @@ const Index: NextPage<IIndexProps> = ({ loggedInUser }) => {
   const [setUser] = useMutation(SET_LOGGED_IN_USER);
 
   useEffect(() => {
-    // @ts-ignore
-    if (loggedInUser.id) {
+    if (Object.entries(loggedInUser).length > 0) {
       setUser({
         variables: {
-          loggedInUser
+          // @ts-ignore
+          loggedInUser: loggedInUser.user
         }
       });
     }
@@ -36,6 +35,7 @@ const Index: NextPage<IIndexProps> = ({ loggedInUser }) => {
       <Link href="/about">
         <a> about </a>
       </Link>
+      <img src="/static/default_profile_picture.jpg" alt="tet" />
     </Layout>
   );
 };
@@ -46,9 +46,8 @@ Index.getInitialProps = async ({ req, apolloClient }: IPageContext) => {
       apolloClient,
       getUID(req.headers.cookie || "")
     );
-    // @ts-ignore
-    const dataToPassDown = omit(loggedInUser.loggedInUser.user, "__typename");
-    return { loggedInUser: dataToPassDown };
+
+    return { loggedInUser };
   }
 
   return { loggedInUser: {} };
